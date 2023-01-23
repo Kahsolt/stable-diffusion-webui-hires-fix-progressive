@@ -4,8 +4,8 @@ from typing import List
 import gradio as gr
 import numpy as np
 
-from modules.scripts import Script
-from modules.shared import state, sd_upscalers 
+from modules.scripts import Script, AlwaysVisible
+from modules.shared import state, sd_upscalers
 from modules.processing import process_images, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, Processed
 from modules.images import resize_image
 
@@ -18,6 +18,7 @@ DEFAULT_ALTER_PROMPT  = None
 DEFAULT_UPSCALER      = 'Lanczos'
 DEFAULT_RESIZE_MODE   = 'Adjust'
 DEFAULT_SAVE_INTERM   = False
+DEFAULT_SHOW_ALWAYS   = False
 
 CHOICE_UPSCALER    = [x.name for x in sd_upscalers if x.name not in [None, 'None']]
 CHOICE_RESIZE_MODE = ['Adjust', 'Crop', 'Fill']
@@ -76,25 +77,27 @@ class Script(Script):
         return "A progressive version of hires.fix implementation."
 
     def show(self, is_img2img):
-        return not is_img2img
+        if is_img2img: return False
+        else: return AlwaysVisible
 
     def ui(self, is_img2img):
-        with gr.Row():
-            upscaler      = gr.Dropdown(label='Upscaler',    value=lambda: DEFAULT_UPSCALER,    choices=CHOICE_UPSCALER)
-            resize_mode   = gr.Dropdown(label='Resize mode', value=lambda: DEFAULT_RESIZE_MODE, choices=CHOICE_RESIZE_MODE)
-            target_width  = gr.Slider(label='Target width',  value=lambda: DEFAULT_TARGET_WIDTH,  minimum=512, maximum=2048, step=8)
-            target_height = gr.Slider(label='Target height', value=lambda: DEFAULT_TARGET_HEIGHT, minimum=512, maximum=2048, step=8)
+        with gr.Accordion(label='Hires. fix (progressive)', open=False):
+            with gr.Row(variant='compact'):
+                upscaler      = gr.Dropdown(label='Upscaler',    value=lambda: DEFAULT_UPSCALER,    choices=CHOICE_UPSCALER)
+                resize_mode   = gr.Dropdown(label='Resize mode', value=lambda: DEFAULT_RESIZE_MODE, choices=CHOICE_RESIZE_MODE)
+                target_width  = gr.Slider(label='Target width',  value=lambda: DEFAULT_TARGET_WIDTH,  minimum=512, maximum=2048, step=8)
+                target_height = gr.Slider(label='Target height', value=lambda: DEFAULT_TARGET_HEIGHT, minimum=512, maximum=2048, step=8)
 
-        with gr.Group():
-            with gr.Row():
+            with gr.Row(variant='compact'):
                 iters = gr.Slider(label='Iteration', value=lambda: DEFAULT_ITER, minimum=0, maximum=30, step=1)
                 steps = gr.Slider(label='Img2img steps (per iter)', value=lambda: DEFAULT_STEP, minimum=1, maximum=150, step=1)
                 denoising_strength = gr.Slider(label='Denoising strength', value=lambda: DEFAULT_DENOISE_W, minimum=0.0, maximum=1.0, step=0.01)
-            with gr.Row():
+            
+            with gr.Row(variant='compact'):
                 alter_prompt = gr.TextArea(label='Img2img prompt', value=lambda: DEFAULT_ALTER_PROMPT, lines=2)
         
-        with gr.Row():
-            save_interm = gr.Checkbox(label='Save intermediate images', value=lambda: DEFAULT_SAVE_INTERM)
+            with gr.Row(variant='compact'):
+                save_interm = gr.Checkbox(label='Save intermediate images', value=lambda: DEFAULT_SAVE_INTERM)
 
         return [iters, 
                 upscaler, resize_mode, target_width, target_height,
