@@ -6,6 +6,8 @@
 
 Highres.fix pipline gives us an inspirable way to sketch-and-refine an image, we could make it even further~
 
+⚠ This is possibly obsolete, try use [multidiffusion-upscaler-for-automatic1111](https://github.com/pkuliyi2015/multidiffusion-upscaler-for-automatic1111) for img2img upscale instead :)
+
 
 ### Examples
 
